@@ -13,6 +13,7 @@ from django.views.decorators.csrf import csrf_exempt
 from jsonschema import validate
 from jsonschema.exceptions import ValidationError as JsonschemaValidationError
 
+from .exceptions import SortByException, OrderByException
 from .models import Ad
 from .schemas import AD_SCHEMA
 
@@ -31,7 +32,10 @@ class GetAdListView(View):
             if not order:
                 order = 'asc'
 
-            assert order in ('asc', 'desc')
+            if sort_by not in ('price', 'date'):
+                raise SortByException
+            if order not in ('asc', 'desc'):
+                raise OrderByException
 
             start = 10 * (page - 1)
             end = page * 10
@@ -44,8 +48,11 @@ class GetAdListView(View):
             for ad in ads:
                 ads_dict[ad.id] = model_to_dict(ad, fields=['id', 'title', 'urls_list', 'price'])
                 ads_dict[ad.id]['urls_list'] = ads_dict[ad.id]['urls_list'].split(',')[0]
-        except AssertionError:
+
+        except OrderByException:
             return JsonResponse({'error': 'Order must be \'asc\' or \'desc\''}, status=400)
+        except SortByException:
+            return JsonResponse({'error': 'Sorted must be \'price\' or \'date\''}, status=400)
         except FieldError:
             return JsonResponse({'error': 'Sorted must be \'price\' or \'date\''}, status=400)
         except TypeError:
