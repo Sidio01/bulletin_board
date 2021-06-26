@@ -5,6 +5,7 @@
 ~~~
 git clone https://github.com/Sidio01/interview_task.git
 cd interview_task
+docker-compose build --no-cache
 docker-compose up
 ~~~
 Запросы следует отправлять на http://127.0.0.1:8000/
