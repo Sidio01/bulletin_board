@@ -21,8 +21,7 @@ AD_SCHEMA = {
             'anyOf': [
                 {
                     'type': 'integer',
-                    'minimum': 1,
-                    'maximum': 1000000,
+                    'minimum': 1
                 },
                 {
                     'type': 'string',

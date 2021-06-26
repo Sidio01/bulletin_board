@@ -25,6 +25,12 @@ class GetAdListView(View):
             page = int(request.GET.get('page'))
             sort_by = request.GET.get('sorted')
             order = request.GET.get('order')
+
+            if not sort_by:
+                sort_by = 'price'
+            if not order:
+                order = 'asc'
+
             assert order in ('asc', 'desc')
 
             start = 10 * (page - 1)
@@ -39,13 +45,13 @@ class GetAdListView(View):
                 ads_dict[ad.id] = model_to_dict(ad, fields=['id', 'title', 'urls_list', 'price'])
                 ads_dict[ad.id]['urls_list'] = ads_dict[ad.id]['urls_list'].split(',')[0]
         except AssertionError:
-            return JsonResponse({'errors': 'Order must be \'asc\' or \'desc\''}, status=400)
+            return JsonResponse({'error': 'Order must be \'asc\' or \'desc\''}, status=400)
         except FieldError:
-            return JsonResponse({'errors': 'Sorted must be \'price\' or \'date\''}, status=400)
+            return JsonResponse({'error': 'Sorted must be \'price\' or \'date\''}, status=400)
         except TypeError:
-            return JsonResponse({'errors': 'Enter page'}, status=400)
+            return JsonResponse({'error': 'Enter page'}, status=400)
         except ValueError:
-            return JsonResponse({'errors': 'Page must be integer'}, status=400)
+            return JsonResponse({'error': 'Page must be integer'}, status=400)
 
         return JsonResponse(ads_dict, status=200)
 
@@ -58,9 +64,9 @@ class GetAdView(View):
             flag = request.GET.get('fields')
             ad = Ad.objects.get(id=ad_id)
         except Ad.DoesNotExist:
-            return JsonResponse(status=404, data={})
+            return JsonResponse({'error': 'Ad doesn\'t exist'}, status=404)
         if flag == 'true':
-            ad_dict = model_to_dict(ad)
+            ad_dict = model_to_dict(ad, fields=['id', 'title', 'description', 'price', 'urls_list'])
         else:
             ad_dict = model_to_dict(ad, fields=['id', 'title', 'price', 'urls_list'])
             ad_dict['urls_list'] = ad_dict['urls_list'].split(',')[0]
@@ -79,7 +85,7 @@ class AddAdView(View):
             url_validator = URLValidator()
             pre_urls_list = data['urls_list'].split(',')
             if len(pre_urls_list) > 3:
-                return JsonResponse({'errors': 'Enter 3 or less URL'}, status=400)
+                return JsonResponse({'error': 'Enter 3 or less URL'}, status=400)
             for url in pre_urls_list:
                 url_validator(url)
 
@@ -87,12 +93,10 @@ class AddAdView(View):
                     description=data['description'],
                     urls_list=data['urls_list'],
                     price=data['price'],
-                    creation_datetime=datetime.datetime.now())
+                    date=datetime.datetime.now())
             ad.save()
             return JsonResponse({'id': ad.id}, status=201)
         except DjangoValidationError as exc:
-            return JsonResponse({'errors': exc.message}, status=400)
-        except ValueError:
-            return JsonResponse({}, status=400)
+            return JsonResponse({'error': exc.message}, status=400)
         except JsonschemaValidationError as exc:
-            return JsonResponse({'errors': exc.message}, status=400)
+            return JsonResponse({'error': exc.message}, status=400)
