@@ -1,9 +1,9 @@
-# Решение тестового задания для backend-стажёра в команду Advertising ![](https://svgur.com/i/YXB.svg)
+# Доска объявлений ![](https://svgur.com/i/YXB.svg)
 
 ## Инструкция по запуску:
 
 ~~~
-git clone https://github.com/Sidio01/interview_task.git
+git clone https://github.com/Sidio01/bulletin_board.git
 cd interview_task
 docker-compose build --no-cache
 docker-compose up
