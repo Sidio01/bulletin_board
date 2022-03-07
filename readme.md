@@ -4,7 +4,7 @@
 
 ~~~
 git clone https://github.com/Sidio01/bulletin_board.git
-cd interview_task
+cd bulletin_board
 docker-compose build --no-cache
 docker-compose up
 ~~~
